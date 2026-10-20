@@ -78,6 +78,41 @@ app.get("/lessons", async (req, res, next) => {
 });
 
 // ---------------------------------------------------------------
+// GET /search?q=text  ->  (challenge) full-text style search
+// Returns every lesson where the text appears in the topic, location,
+// price or space - the user does not choose which attribute.
+// e.g. /search?q=a  matches "Math", "Hendon", ...
+//      /search?q=10 matches price 100, 110 ...
+// ---------------------------------------------------------------
+app.get("/search", async (req, res, next) => {
+    try {
+        const q = (req.query.q || "").trim();
+        if (q === "") {
+            const all = await db.collection("lesson").find({}).toArray();
+            return res.json(all);
+        }
+
+        // Escape characters like . * + ? so they are searched for literally
+        const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(safe, "i"); // "i" = ignore upper/lower case
+
+        const results = await db.collection("lesson").find({
+            $or: [
+                { topic: regex },
+                { location: regex },
+                // price and space are numbers, so convert them to text first
+                { $expr: { $regexMatch: { input: { $toString: "$price" }, regex: safe, options: "i" } } },
+                { $expr: { $regexMatch: { input: { $toString: "$space" }, regex: safe, options: "i" } } }
+            ]
+        }).toArray();
+
+        res.json(results);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// ---------------------------------------------------------------
 // POST /orders  ->  saves a new order in the "order" collection
 // Expected body:
 // {
