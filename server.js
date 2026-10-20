@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +42,18 @@ app.use((req, res, next) => {
 
 // Parse JSON request bodies (used by the POST and PUT routes)
 app.use(express.json());
+
+// ---------------------------------------------------------------
+// Static file middleware: serves lesson images from the "images"
+// folder, e.g. GET /images/math.svg
+// If the file does not exist, express.static calls next() and the
+// second middleware sends back an error message instead.
+// ---------------------------------------------------------------
+const imagesDir = path.join(__dirname, "images");
+app.use("/images", express.static(imagesDir));
+app.use("/images", (req, res) => {
+    res.status(404).json({ error: `Image not found: ${req.path}` });
+});
 
 // Simple route to check the server is running
 app.get("/", (req, res) => {
