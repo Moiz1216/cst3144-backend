@@ -113,6 +113,72 @@ app.get("/search", async (req, res, next) => {
 });
 
 // ---------------------------------------------------------------
+// GET /teachers  ->  (challenge) returns all teachers
+// Each teacher: { _id, firstName, lastName, lessonIDs: [...] }
+// ---------------------------------------------------------------
+app.get("/teachers", async (req, res, next) => {
+    try {
+        const teachers = await db.collection("teacher").find({}).toArray();
+        res.json(teachers);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// ---------------------------------------------------------------
+// GET /teachers/:id/lessons  ->  (challenge) all lessons taught by one teacher
+// ---------------------------------------------------------------
+app.get("/teachers/:id/lessons", async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid teacher id" });
+        }
+
+        const teacher = await db.collection("teacher").findOne({ _id: new ObjectId(id) });
+        if (!teacher) {
+            return res.status(404).json({ error: "Teacher not found" });
+        }
+
+        // $in finds every lesson whose _id is in the teacher's lessonIDs array
+        const lessons = await db.collection("lesson")
+            .find({ _id: { $in: teacher.lessonIDs } })
+            .toArray();
+        res.json(lessons);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// ---------------------------------------------------------------
+// GET /enrolment/:lessonid  ->  (challenge) number of spaces already
+// purchased for a lesson, worked out from all the saved orders.
+// ---------------------------------------------------------------
+app.get("/enrolment/:lessonid", async (req, res, next) => {
+    try {
+        const id = req.params.lessonid;
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid lesson id" });
+        }
+        const lessonId = new ObjectId(id);
+
+        // Every order that includes this lesson
+        const orders = await db.collection("order").find({ lessonIDs: lessonId }).toArray();
+
+        // Add up the spaces booked for this lesson in each order
+        let enrolment = 0;
+        for (const order of orders) {
+            const index = order.lessonIDs.findIndex(l => l.equals(lessonId));
+            enrolment += order.spaces[index];
+        }
+
+        res.json({ lessonId: id, enrolment: enrolment });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// ---------------------------------------------------------------
 // POST /orders  ->  saves a new order in the "order" collection
 // Expected body:
 // {
