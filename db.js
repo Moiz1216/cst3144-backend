@@ -14,6 +14,10 @@ async function connectToDatabase() {
         throw new Error(`MONGODB_URI must start with "mongodb+srv://" but it starts with "${uri.slice(0, 12)}"`);
     }
 
+    // Log which cluster we are connecting to (the part after "@", so no password is shown)
+    const host = uri.split("@").pop().split(/[/?]/)[0];
+    console.log(`Connecting to MongoDB host: ${JSON.stringify(host)}`);
+
     const client = new MongoClient(uri);
     await client.connect();
 
