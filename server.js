@@ -123,6 +123,42 @@ app.post("/orders", async (req, res, next) => {
 });
 
 // ---------------------------------------------------------------
+// PUT /lessons/:id  ->  updates ANY attribute(s) of one lesson
+// The body holds the fields to change, set to their new values, e.g.
+//   { "space": 3 }                       (set spaces to exactly 3)
+//   { "price": 95, "location": "Hendon" } (change several fields)
+// After an order the front-end sends the new number of spaces.
+// ---------------------------------------------------------------
+app.put("/lessons/:id", async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid lesson id" });
+        }
+
+        const updates = { ...req.body };
+        delete updates._id; // the _id of a document can never be changed
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: "Request body must contain at least one field to update" });
+        }
+
+        // $set replaces the given fields with the new values
+        const updatedLesson = await db.collection("lesson").findOneAndUpdate(
+            { _id: new ObjectId(id) },
+            { $set: updates },
+            { returnDocument: "after" }
+        );
+
+        if (!updatedLesson) {
+            return res.status(404).json({ error: "Lesson not found" });
+        }
+        res.json({ message: "Lesson updated", lesson: updatedLesson });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// ---------------------------------------------------------------
 // Error handling
 // ---------------------------------------------------------------
 // Any route not matched above
