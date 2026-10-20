@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const { connectToDatabase } = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -55,11 +56,52 @@ app.use("/images", (req, res) => {
     res.status(404).json({ error: `Image not found: ${req.path}` });
 });
 
+// The database object is set once we have connected (see start() below)
+let db;
+
 // Simple route to check the server is running
 app.get("/", (req, res) => {
     res.json({ message: "CST3144 After School Lessons API is running" });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// ---------------------------------------------------------------
+// GET /lessons  ->  returns all lessons as JSON
+// ---------------------------------------------------------------
+app.get("/lessons", async (req, res, next) => {
+    try {
+        const lessons = await db.collection("lesson").find({}).toArray();
+        res.json(lessons);
+    } catch (err) {
+        next(err);
+    }
 });
+
+// ---------------------------------------------------------------
+// Error handling
+// ---------------------------------------------------------------
+// Any route not matched above
+app.use((req, res) => {
+    res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });
+});
+
+// Any error passed to next(err) in a route ends up here
+app.use((err, req, res, next) => {
+    console.error("Server error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+});
+
+// Connect to MongoDB first, then start listening for requests
+async function start() {
+    try {
+        const connection = await connectToDatabase();
+        db = connection.db;
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (err) {
+        console.error("Could not start server:", err.message);
+        process.exit(1);
+    }
+}
+
+start();
