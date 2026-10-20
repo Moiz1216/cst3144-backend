@@ -4,8 +4,8 @@ Back-end for the CST3144 coursework. Node.js + Express.js REST API, using the
 **native MongoDB Node.js driver** (no Mongoose) to talk to MongoDB Atlas.
 
 ## Links
-- GitHub repository: _add link_
-- Render.com – all lessons: _add link_ (e.g. `https://M00XXXXXX-after-school.onrender.com/lessons`)
+- GitHub repository: https://github.com/Moiz1216/cst3144-backend
+- Render.com – all lessons: https://m01039431-after-school.onrender.com/lessons
 
 ## Files
 | File | What it does |
@@ -47,6 +47,6 @@ npm run dev               # starts on http://localhost:3000
 
 ## Deploying on render.com
 - New → Web Service → connect this GitHub repo
-- Name: `M00XXXXXX-after-school` (must include student number)
+- Name: `m01039431-after-school` (must include student number)
 - Build command: `npm install` · Start command: `npm start`
 - Environment variables: `MONGODB_URI`, `DB_NAME=afterschool`
