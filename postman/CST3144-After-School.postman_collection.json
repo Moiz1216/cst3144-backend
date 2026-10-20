@@ -1,0 +1,72 @@
+{
+  "info": {
+    "name": "CST3144 After School API",
+    "description": "Requests for the CST3144 coursework demo. Set the baseUrl variable to your render.com address (or http://localhost:3000 when running locally). Replace LESSON_ID / TEACHER_ID with real _id values copied from GET /lessons or GET /teachers.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "lessonId", "value": "LESSON_ID" },
+    { "key": "teacherId", "value": "TEACHER_ID" }
+  ],
+  "item": [
+    {
+      "name": "GET all lessons",
+      "request": { "method": "GET", "url": "{{baseUrl}}/lessons" }
+    },
+    {
+      "name": "POST new order",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Moiz\",\n  \"phone\": \"07123456789\",\n  \"lessonIDs\": [\"{{lessonId}}\"],\n  \"spaces\": [2]\n}"
+        },
+        "url": "{{baseUrl}}/orders"
+      }
+    },
+    {
+      "name": "PUT update lesson spaces",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"space\": 3\n}" },
+        "url": "{{baseUrl}}/lessons/{{lessonId}}"
+      }
+    },
+    {
+      "name": "PUT update any attributes",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"price\": 95,\n  \"location\": \"Hendon\"\n}" },
+        "url": "{{baseUrl}}/lessons/{{lessonId}}"
+      }
+    },
+    {
+      "name": "GET search lessons",
+      "request": { "method": "GET", "url": "{{baseUrl}}/search?q=hendon" }
+    },
+    {
+      "name": "GET all teachers",
+      "request": { "method": "GET", "url": "{{baseUrl}}/teachers" }
+    },
+    {
+      "name": "GET lessons by teacher",
+      "request": { "method": "GET", "url": "{{baseUrl}}/teachers/{{teacherId}}/lessons" }
+    },
+    {
+      "name": "GET enrolment for a lesson",
+      "request": { "method": "GET", "url": "{{baseUrl}}/enrolment/{{lessonId}}" }
+    },
+    {
+      "name": "GET lesson image",
+      "request": { "method": "GET", "url": "{{baseUrl}}/images/math.svg" }
+    },
+    {
+      "name": "GET missing image (error message)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/images/does-not-exist.png" }
+    }
+  ]
+}
