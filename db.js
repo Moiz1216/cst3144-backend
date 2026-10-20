@@ -5,7 +5,11 @@ const { MongoClient } = require("mongodb");
 // so the password is never written in the code or pushed to GitHub.
 async function connectToDatabase() {
     // trim() removes accidental spaces/new lines, the replace removes accidental quotes
-    const uri = (process.env.MONGODB_URI || "").trim().replace(/^["']|["']$/g, "");
+    // It also removes an accidental "MONGODB_URI=" or "=" pasted in front of the value
+    const uri = (process.env.MONGODB_URI || "")
+        .trim()
+        .replace(/^(MONGODB_URI)?\s*=\s*/, "")
+        .replace(/^["']|["']$/g, "");
     if (!uri) {
         throw new Error("MONGODB_URI environment variable is not set");
     }
